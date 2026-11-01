@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+defaults:
+  run:
+    working-directory: shift-case
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: shift-case/package-lock.json
+      - run: npm ci
+      - run: npm run check-types
+      - run: npm run lint
+      - name: Test (Linux, headless)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm test
+      - name: Test
+        if: runner.os != 'Linux'
+        run: npm test

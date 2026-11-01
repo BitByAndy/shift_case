@@ -7,7 +7,7 @@ A VS Code extension that toggles selected text between UPPERCASE and lowercase.
 Select any text and press `Shift+Alt+U` (or run **Toggle Case** from the Command Palette) to switch between cases.
 
 - All-uppercase text → lowercase
-- Everything else → UPPERCASE
+- Everything else (lowercase or mixed case) → UPPERCASE
 - Works with multiple cursors / multiple selections
 
 ## Usage
