@@ -188,7 +188,7 @@ suite('Shift Case Extension Test Suite', () => {
 		});
 
 		test('should toggle case across multiple selections', async () => {
-			await vscode.extensions.getExtension('see-why.shift-case')?.activate();
+			await vscode.extensions.getExtension('bitbyandy.shift-case')?.activate();
 
 			const document = await vscode.workspace.openTextDocument({
 				content: 'hello world\nFOO BAR',

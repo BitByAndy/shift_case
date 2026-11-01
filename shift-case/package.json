@@ -3,7 +3,7 @@
   "displayName": "Shift Case",
   "description": "Toggle selected text between UPPERCASE and lowercase with a single keybinding",
   "version": "0.0.1",
-  "publisher": "see-why",
+  "publisher": "bitbyandy",
   "license": "MIT",
   "repository": {
     "type": "git",
