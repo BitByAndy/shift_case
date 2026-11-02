@@ -8,6 +8,16 @@ export function toggleCase(text: string): string {
 	return text === text.toUpperCase() ? text.toLowerCase() : text.toUpperCase();
 }
 
+/**
+ * Where `offset` (within `text`) lands after `toggleCase(text)`. The direction is
+ * decided by the whole text, then applied to just the part before the offset, so
+ * length changes such as "ß" -> "SS" are accounted for.
+ */
+export function toggledOffset(text: string, offset: number): number {
+	const prefix = text.slice(0, offset);
+	return (text === text.toUpperCase() ? prefix.toLowerCase() : prefix.toUpperCase()).length;
+}
+
 /** A range to toggle, plus where it came from in `editor.selections`. */
 interface Target {
 	range: vscode.Range;
@@ -88,6 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
 			return {
 				target,
 				range: target.range,
+				oldText,
 				text: toggleCase(oldText),
 				delta: 0,
 				start: document.offsetAt(target.range.start),
@@ -122,8 +133,17 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		for (const { offset, index } of passthrough) {
-			// Shift by every edit that ended at or before this cursor.
-			const moved = edits.reduce((sum, edit) => (edit.end <= offset ? sum + edit.delta : sum), offset);
+			// Shift by every edit that ended at or before this cursor. A cursor
+			// strictly inside a replaced selection moves with the text before it.
+			const moved = edits.reduce((sum, edit) => {
+				if (edit.end <= offset) {
+					return sum + edit.delta;
+				}
+				if (edit.start < offset) {
+					return sum + toggledOffset(edit.oldText, offset - edit.start) - (offset - edit.start);
+				}
+				return sum;
+			}, offset);
 			const position = document.positionAt(moved);
 			result.push({ index, selection: new vscode.Selection(position, position) });
 		}
