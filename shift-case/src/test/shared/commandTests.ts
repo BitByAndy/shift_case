@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { toggleCase } from '../../extension';
+import { toggleCase, toggledOffset } from '../../extension';
 
 export async function open(content: string) {
 	await vscode.extensions.getExtension('bitbyandy.shift-case')?.activate();
@@ -16,6 +16,18 @@ export const selectedTexts = (editor: vscode.TextEditor) =>
 
 /** Registers the Mocha suites for the toggle command; shared by the desktop and web test runs. */
 export function registerCommandTests(): void {
+	suite('toggledOffset', () => {
+		test('accounts for length changes before the offset', () => {
+			assert.strictEqual(toggledOffset('aß!?', 3), 4);
+			assert.strictEqual(toggledOffset('aß!?', 1), 1);
+			assert.strictEqual(toggledOffset('ASS!?', 3), 3);
+		});
+		test('uses the direction of the whole text', () => {
+			// "aß" is not all-uppercase, so the whole text goes UPPERCASE: ß -> SS.
+			assert.strictEqual(toggledOffset('aß', 2), 3);
+		});
+	});
+
 	suite('toggleCase', () => {
 		const cases: Array<[string, string]> = [
 			['hello world', 'HELLO WORLD'],
@@ -189,6 +201,18 @@ export function registerCommandTests(): void {
 					[editor.selections[1].active.line, editor.selections[1].active.character],
 					[0, 8]
 				);
+			});
+
+			test('a cursor inside a growing selection moves with the text before it', async () => {
+				const { document, editor } = await open('aß!? x');
+				editor.selections = [new vscode.Selection(0, 0, 0, 4), at(0, 3)];
+				await toggle();
+				assert.strictEqual(document.getText(), 'ASS!? x');
+				// If the editor kept both selections, the cursor must still sit between "!" and "?".
+				const cursor = editor.selections.find(s => s.isEmpty);
+				if (cursor) {
+					assert.strictEqual(cursor.active.character, 4);
+				}
 			});
 
 			test('later cursors stay on their text when an earlier edit grows', async () => {
