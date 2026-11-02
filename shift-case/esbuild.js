@@ -2,6 +2,7 @@ const esbuild = require("esbuild");
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
+const webTests = process.argv.includes('--web-tests');
 
 /**
  * @type {import('esbuild').Plugin}
@@ -43,10 +44,23 @@ const common = {
 
 async function main() {
 	// Desktop (Node) bundle and web (browser / vscode.dev) bundle.
-	const contexts = await Promise.all([
-		esbuild.context({ ...common, platform: 'node', outfile: 'dist/extension.js' }),
-		esbuild.context({ ...common, platform: 'browser', outfile: 'dist/web/extension.js' }),
-	]);
+	const targets = [
+		{ ...common, platform: 'node', outfile: 'dist/extension.js' },
+		{ ...common, platform: 'browser', outfile: 'dist/web/extension.js' },
+	];
+	if (webTests) {
+		// Mocha test bundle that runs inside the web extension host (@vscode/test-web).
+		targets.push({
+			...common,
+			entryPoints: ['src/test/web/index.ts'],
+			platform: 'browser',
+			outfile: 'dist/test/web/index.js',
+			minify: false,
+			inject: ['src/test/web/process-shim.js'],
+			define: { global: 'globalThis' },
+		});
+	}
+	const contexts = await Promise.all(targets.map(t => esbuild.context(t)));
 	if (watch) {
 		await Promise.all(contexts.map(ctx => ctx.watch()));
 	} else {
