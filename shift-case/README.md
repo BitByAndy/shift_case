@@ -2,6 +2,8 @@
 
 A VS Code extension that toggles selected text between UPPERCASE and lowercase.
 
+![Shift Case demo](https://raw.githubusercontent.com/BitByAndy/shift_case/main/images/shift-case-demo.gif)
+
 ## Features
 
 Select any text and press `Shift+Alt+U` (or run **Toggle Case** from the Command Palette) to switch between cases.
