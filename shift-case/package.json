@@ -2,7 +2,7 @@
   "name": "shift-case",
   "displayName": "Shift Case",
   "description": "Toggle selected text between UPPERCASE and lowercase with a single keybinding",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "bitbyandy",
   "license": "MIT",
   "repository": {
