@@ -216,6 +216,19 @@ suite('shift-case.toggleCase command', () => {
 			}
 		});
 
+		test('overlapping selections are merged into one edit', async () => {
+			const config = vscode.workspace.getConfiguration('editor');
+			await config.update('multiCursorMergeOverlapping', false, vscode.ConfigurationTarget.Global);
+			try {
+				const { document, editor } = await open('hello world');
+				editor.selections = [new vscode.Selection(0, 0, 0, 7), new vscode.Selection(0, 4, 0, 9)];
+				await toggle();
+				assert.strictEqual(document.getText(), 'HELLO WORLd');
+			} finally {
+				await config.update('multiCursorMergeOverlapping', undefined, vscode.ConfigurationTarget.Global);
+			}
+		});
+
 		test('later cursors stay on their text when an earlier edit grows', async () => {
 			const { document, editor } = await open('straße abc');
 			editor.selections = [new vscode.Selection(0, 0, 0, 6), at(0, 8)];
