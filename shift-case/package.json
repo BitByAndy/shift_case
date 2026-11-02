@@ -36,6 +36,7 @@
     "onCommand:shift-case.toggleCase"
   ],
   "main": "./dist/extension.js",
+	"browser": "./dist/web/extension.js",
   "contributes": {
     "commands": [
       {
@@ -48,20 +49,20 @@
         "command": "shift-case.toggleCase",
         "key": "shift+alt+u",
         "mac": "shift+alt+u",
-        "when": "editorHasSelection"
+        "when": "editorTextFocus"
       }
     ],
     "menus": {
       "commandPalette": [
         {
           "command": "shift-case.toggleCase",
-          "when": "editorHasSelection"
+          "when": "editorIsOpen"
         }
       ],
       "editor/context": [
         {
           "command": "shift-case.toggleCase",
-          "when": "editorHasSelection",
+          "when": "editorTextFocus",
           "group": "1_modification"
         }
       ]

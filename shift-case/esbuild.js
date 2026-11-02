@@ -23,30 +23,35 @@ const esbuildProblemMatcherPlugin = {
 	},
 };
 
+/** @type {import('esbuild').BuildOptions} */
+const common = {
+	entryPoints: [
+		'src/extension.ts'
+	],
+	bundle: true,
+	format: 'cjs',
+	minify: production,
+	sourcemap: !production,
+	sourcesContent: false,
+	external: ['vscode'],
+	logLevel: 'silent',
+	plugins: [
+		/* add to the end of plugins array */
+		esbuildProblemMatcherPlugin,
+	],
+};
+
 async function main() {
-	const ctx = await esbuild.context({
-		entryPoints: [
-			'src/extension.ts'
-		],
-		bundle: true,
-		format: 'cjs',
-		minify: production,
-		sourcemap: !production,
-		sourcesContent: false,
-		platform: 'node',
-		outfile: 'dist/extension.js',
-		external: ['vscode'],
-		logLevel: 'silent',
-		plugins: [
-			/* add to the end of plugins array */
-			esbuildProblemMatcherPlugin,
-		],
-	});
+	// Desktop (Node) bundle and web (browser / vscode.dev) bundle.
+	const contexts = await Promise.all([
+		esbuild.context({ ...common, platform: 'node', outfile: 'dist/extension.js' }),
+		esbuild.context({ ...common, platform: 'browser', outfile: 'dist/web/extension.js' }),
+	]);
 	if (watch) {
-		await ctx.watch();
+		await Promise.all(contexts.map(ctx => ctx.watch()));
 	} else {
-		await ctx.rebuild();
-		await ctx.dispose();
+		await Promise.all(contexts.map(ctx => ctx.rebuild()));
+		await Promise.all(contexts.map(ctx => ctx.dispose()));
 	}
 }
 
