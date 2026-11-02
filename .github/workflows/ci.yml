@@ -32,3 +32,19 @@ jobs:
       - name: Test
         if: runner.os != 'Linux'
         run: npm test
+
+  # Runs the same editor tests plus Jupyter notebook-cell tests in VS Code for the
+  # Web (headless Chromium via @vscode/test-web).
+  web-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: shift-case/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:web
