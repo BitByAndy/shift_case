@@ -23,6 +23,10 @@ This extension has no configurable settings.
 
 ## Release Notes
 
+### 0.0.2
+
+Declared the activation event explicitly and added a demo GIF to the README.
+
 ### 0.0.1
 
 Initial release — toggle case command with keybinding and multi-cursor support.
