@@ -228,6 +228,21 @@ export function registerCommandTests(): void {
 				}
 			});
 
+			test('merged overlapping selections keep the direction of the primary one', async () => {
+				const config = vscode.workspace.getConfiguration('editor');
+				await config.update('multiCursorMergeOverlapping', false, vscode.ConfigurationTarget.Global);
+				try {
+					const { document, editor } = await open('hello world');
+					// The primary (first) selection is reversed but sorts after the other one.
+					editor.selections = [new vscode.Selection(0, 9, 0, 4), new vscode.Selection(0, 0, 0, 7)];
+					await toggle();
+					assert.strictEqual(document.getText(), 'HELLO WORld');
+					assert.ok(editor.selections[0].isReversed);
+				} finally {
+					await config.update('multiCursorMergeOverlapping', undefined, vscode.ConfigurationTarget.Global);
+				}
+			});
+
 			test('later cursors stay on their text when an earlier edit grows', async () => {
 				const { document, editor } = await open('straße abc');
 				editor.selections = [new vscode.Selection(0, 0, 0, 6), at(0, 8)];

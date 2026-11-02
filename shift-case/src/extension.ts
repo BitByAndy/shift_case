@@ -61,7 +61,11 @@ function resolveTargets(editor: vscode.TextEditor): { targets: Target[]; passthr
 			const last = targets[targets.length - 1];
 			if (last && overlaps(last.range, selection)) {
 				last.range = last.range.union(selection);
-				last.index = Math.min(last.index, index);
+				if (index < last.index) {
+					// The lowest-index selection is the primary one: keep its direction.
+					last.index = index;
+					last.reversed = selection.isReversed;
+				}
 			} else {
 				targets.push({ range: selection, reversed: selection.isReversed, index });
 			}
