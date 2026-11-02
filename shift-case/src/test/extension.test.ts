@@ -223,7 +223,7 @@ suite('shift-case.toggleCase command', () => {
 				const { document, editor } = await open('hello world');
 				editor.selections = [new vscode.Selection(0, 0, 0, 7), new vscode.Selection(0, 4, 0, 9)];
 				await toggle();
-				assert.strictEqual(document.getText(), 'HELLO WORLd');
+				assert.strictEqual(document.getText(), 'HELLO WORld');
 			} finally {
 				await config.update('multiCursorMergeOverlapping', undefined, vscode.ConfigurationTarget.Global);
 			}
