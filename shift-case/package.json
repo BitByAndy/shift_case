@@ -81,7 +81,7 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
     "test": "vscode-test",
-    "test:web": "node esbuild.js --web-tests && vscode-test-web --browser=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/test/web/index.js"
+    "test:web": "node esbuild.js --web-tests && vscode-test-web --browser=chromium --headless --extensionDevelopmentPath=. --extensionTestsPath=dist/test/web/index.js"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
