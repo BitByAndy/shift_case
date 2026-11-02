@@ -51,11 +51,21 @@ function resolveTargets(editor: vscode.TextEditor): { targets: Target[]; passthr
 	const passthrough: Passthrough[] = [];
 
 	// Explicit selections win over words derived from bare cursors.
-	selections.forEach((selection, index) => {
-		if (!selection.isEmpty) {
-			targets.push({ range: selection, reversed: selection.isReversed, index });
-		}
-	});
+	// Overlapping selections (possible with `editor.multiCursorMergeOverlapping`
+	// off) are merged into one target so the edits never overlap.
+	selections
+		.map((selection, index) => ({ selection, index }))
+		.filter(({ selection }) => !selection.isEmpty)
+		.sort((a, b) => a.selection.start.compareTo(b.selection.start))
+		.forEach(({ selection, index }) => {
+			const last = targets[targets.length - 1];
+			if (last && overlaps(last.range, selection)) {
+				last.range = last.range.union(selection);
+				last.index = Math.min(last.index, index);
+			} else {
+				targets.push({ range: selection, reversed: selection.isReversed, index });
+			}
+		});
 
 	selections.forEach((selection, index) => {
 		if (!selection.isEmpty) {
