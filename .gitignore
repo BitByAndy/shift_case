@@ -27,3 +27,4 @@ coverage/
 
 vscode-test-web/
 .vscode-test/
+.vscode-test-web/
