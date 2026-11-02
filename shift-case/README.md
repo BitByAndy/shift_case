@@ -12,6 +12,7 @@ Press `Shift+Alt+U` (or run **Toggle Case** from the Command Palette) to switch 
 - Everything else (lowercase or mixed case) → UPPERCASE
 - Works with multiple cursors / multiple selections; one undo reverts them all
 - With no selection, toggles the word under the cursor (using the language's own definition of a word)
+- Works in VS Code for the Web (vscode.dev, github.dev) as well as the desktop editor
 
 ## Usage
 
