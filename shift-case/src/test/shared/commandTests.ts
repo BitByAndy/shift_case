@@ -123,6 +123,42 @@ export function registerCommandTests(): void {
 				assert.strictEqual(document.getText(), 'ABC def GHI');
 			});
 
+			test('a cursor inside a selection overlapping its word is merged, not rejected', async () => {
+				const { document, editor } = await open('hello world');
+				editor.selections = [new vscode.Selection(0, 0, 0, 6), at(0, 2)];
+				await toggle();
+				assert.strictEqual(document.getText(), 'HELLO world');
+				assert.deepStrictEqual(selectedTexts(editor), ['HELLO ']);
+			});
+
+			test('a cursor in a word partly covered by a selection is merged into the selection', async () => {
+				const { document, editor } = await open('hello world');
+				editor.selections = [new vscode.Selection(0, 3, 0, 8), at(0, 10)]; // "lo wo" + a cursor in "world"
+				await toggle();
+				assert.strictEqual(document.getText(), 'helLO WOrld');
+				assert.deepStrictEqual(selectedTexts(editor), ['LO WO']);
+			});
+
+			test('keeps the primary selection first when it is later in the document', async () => {
+				const { document, editor } = await open('one two three');
+				editor.selections = [at(0, 9), at(0, 1)]; // primary cursor is in "three"
+				await toggle();
+				assert.strictEqual(document.getText(), 'ONE two THREE');
+				assert.deepStrictEqual(selectedTexts(editor), ['THREE', 'ONE']);
+			});
+
+			test('keeps cursors that are not on a word, and keeps them in order', async () => {
+				const { document, editor } = await open('hi   there');
+				editor.selections = [at(0, 3), at(0, 7)]; // primary is on whitespace
+				await toggle();
+				assert.strictEqual(document.getText(), 'hi   THERE');
+				assert.strictEqual(editor.selections.length, 2);
+				assert.ok(editor.selections[0].isEmpty);
+				assert.strictEqual(editor.selections[0].active.character, 3);
+				assert.strictEqual(editor.selections[1].isEmpty, false);
+				assert.strictEqual(document.getText(editor.selections[1]), 'THERE');
+			});
+
 			test('a single undo reverts every cursor', async () => {
 				const { document, editor } = await open('one two\nthree four');
 				editor.selections = [at(0, 1), at(1, 1)];
@@ -141,6 +177,18 @@ export function registerCommandTests(): void {
 				await toggle();
 				assert.strictEqual(document.getText(), 'STRASSE x');
 				assert.deepStrictEqual(selectedTexts(editor), ['STRASSE']);
+			});
+
+			test('a cursor on whitespace after a growing edit is shifted with the text', async () => {
+				const { document, editor } = await open('straße  x');
+				editor.selections = [new vscode.Selection(0, 0, 0, 6), at(0, 7)];
+				await toggle();
+				assert.strictEqual(document.getText(), 'STRASSE  x');
+				assert.strictEqual(editor.selections.length, 2);
+				assert.deepStrictEqual(
+					[editor.selections[1].active.line, editor.selections[1].active.character],
+					[0, 8]
+				);
 			});
 
 			test('later cursors stay on their text when an earlier edit grows', async () => {
