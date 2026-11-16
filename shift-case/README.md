@@ -1,34 +1,37 @@
 # Shift Case
 
-A VS Code extension that toggles selected text between UPPERCASE and lowercase.
-
-![Shift Case demo](https://raw.githubusercontent.com/BitByAndy/shift_case/main/images/shift-case-demo.gif)
-
-## Features
-
-Press `Shift+Alt+U` (or run **Toggle Case** from the Command Palette) to switch between cases. Select text first, or just put the cursor in a word and the word is toggled and selected.
+**One key, two states, nothing to configure.** Press `Shift+Alt+U` to flip text between UPPERCASE and lowercase.
 
 - All-uppercase text → lowercase
 - Everything else (lowercase or mixed case) → UPPERCASE
-- Works with multiple cursors / multiple selections; one undo reverts them all
-- With no selection, toggles the word under the cursor (using the language's own definition of a word)
-- Works in VS Code for the Web (vscode.dev, github.dev) as well as the desktop editor
+
+![Shift Case demo](https://raw.githubusercontent.com/BitByAndy/shift_case/main/images/shift-case-demo.gif)
+
+## Why Shift Case?
+
+- **Predictable.** It never cycles through other cases. Press it twice and you are back where you started.
+- **Zero config.** No settings, no case menu, no mode to remember. Install it and press the key.
+- **Multi-cursor aware.** Works with multiple cursors and selections, and one undo reverts them all.
+- **Lightweight.** No runtime dependencies, it only loads when you run the command, and it collects no telemetry.
+- **Works everywhere.** Desktop VS Code, plus VS Code for the Web (vscode.dev, github.dev).
 
 ## Usage
 
-1. Select the text you want to change, or place the cursor in a word
-2. Press `Shift+Alt+U` — or open the Command Palette and run **Toggle Case**
+1. Select the text you want to change, or just put the cursor in a word.
+2. Press `Shift+Alt+U`, or run **Toggle Case** from the Command Palette.
+
+With no selection, the word under the cursor is toggled (using the language's own definition of a word) and left selected, so a second press flips it back.
+
+## Shift Case vs. the built-in Transform commands
+
+VS Code ships **Transform to Uppercase** and **Transform to Lowercase** in the Command Palette (recent versions add more, such as Title, Snake, Camel, Pascal and Kebab Case). They have no default keyboard shortcut, and each goes one way only: to flip back you run the other command. Shift Case is a single shortcut that goes whichever way is needed, so you never have to decide first.
+
+If you need many case styles, the built-in commands or a multi-case extension are a better fit. Shift Case is for the case where you just want to flip upper/lower with one key.
 
 ## Extension Settings
 
-This extension has no configurable settings.
+None. This extension has no configurable settings.
 
 ## Release Notes
 
-### 0.0.2
-
-Declared the activation event explicitly and added a demo GIF to the README.
-
-### 0.0.1
-
-Initial release — toggle case command with keybinding and multi-cursor support.
+See the [changelog](https://github.com/BitByAndy/shift_case/blob/main/shift-case/CHANGELOG.md).
