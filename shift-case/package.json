@@ -1,7 +1,7 @@
 {
   "name": "shift-case",
   "displayName": "Shift Case",
-  "description": "Toggle selected text between UPPERCASE and lowercase with a single keybinding",
+  "description": "One key, two states: toggle text between UPPERCASE and lowercase with Shift+Alt+U. Nothing to configure.",
   "version": "0.1.0",
   "publisher": "bitbyandy",
   "license": "MIT",
@@ -17,8 +17,15 @@
     "case",
     "uppercase",
     "lowercase",
+    "upper",
+    "lower",
+    "toggle",
     "toggle case",
+    "switch case",
+    "change case",
     "text transform",
+    "keybinding",
+    "shortcut",
     "formatter"
   ],
   "galleryBanner": {
@@ -30,7 +37,8 @@
     "vscode": "^1.75.0"
   },
   "categories": [
-    "Formatters"
+    "Formatters",
+    "Other"
   ],
   "activationEvents": [
     "onCommand:shift-case.toggleCase",
