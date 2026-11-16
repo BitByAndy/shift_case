@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.2.0](https://github.com/BitByAndy/shift_case/compare/v0.1.0...v0.2.0) (2026-11-16)
+
+
+### Features
+
+* add snake, Pascal and sentence case as separate commands ([#25](https://github.com/BitByAndy/shift_case/issues/25)) ([943e42f](https://github.com/BitByAndy/shift_case/commit/943e42f5344760c4f4b4784d8a6bf0aa854f6f48))
+
 ## [0.1.0](https://github.com/BitByAndy/shift_case/compare/v0.0.2...v0.1.0) (2026-11-02)
 
 
