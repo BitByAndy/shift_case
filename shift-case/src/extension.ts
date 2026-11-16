@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { pascalCase, sentenceCase, snakeCase } from './cases';
 
 /**
  * Toggles text between UPPERCASE and lowercase:
@@ -92,82 +93,109 @@ function resolveTargets(editor: vscode.TextEditor): { targets: Target[]; passthr
 	return { targets, passthrough };
 }
 
+/** A text conversion, plus where a cursor inside the converted text ends up. */
+interface Transform {
+	convert(text: string): string;
+	/** Where `offset` (within `text`) lands after `convert(text)`. */
+	offset(text: string, offset: number): number;
+}
+
+const toggle: Transform = { convert: toggleCase, offset: toggledOffset };
+
+/** Converters that are not direction-aware: the cursor moves with the converted prefix. */
+const simple = (convert: (text: string) => string): Transform => ({
+	convert,
+	offset: (text, offset) => convert(text.slice(0, offset)).length,
+});
+
+/** Command id -> conversion. Only `toggleCase` has a default keybinding. */
+const transforms: Record<string, Transform> = {
+	'shift-case.toggleCase': toggle,
+	'shift-case.snakeCase': simple(snakeCase),
+	'shift-case.pascalCase': simple(pascalCase),
+	'shift-case.sentenceCase': simple(sentenceCase),
+};
+
 export function activate(context: vscode.ExtensionContext) {
-	const disposable = vscode.commands.registerCommand('shift-case.toggleCase', async () => {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return;
-		}
+	for (const [command, transform] of Object.entries(transforms)) {
+		context.subscriptions.push(
+			vscode.commands.registerCommand(command, () => applyTransform(transform)),
+		);
+	}
+}
 
-		const { document } = editor;
-		const { targets, passthrough } = resolveTargets(editor);
-		if (targets.length === 0) {
-			return;
-		}
+async function applyTransform(transform: Transform): Promise<void> {
+	const editor = vscode.window.activeTextEditor;
+	if (!editor) {
+		return;
+	}
 
-		// Compute everything against the pre-edit document, then map selections
-		// through the length changes (e.g. "ß" -> "SS").
-		const edits = targets.map(target => {
-			const oldText = document.getText(target.range);
-			return {
-				target,
-				range: target.range,
-				oldText,
-				text: toggleCase(oldText),
-				delta: 0,
-				start: document.offsetAt(target.range.start),
-				end: document.offsetAt(target.range.end),
-			};
-		});
-		for (const edit of edits) {
-			edit.delta = edit.text.length - (edit.end - edit.start);
-		}
+	const { document } = editor;
+	const { targets, passthrough } = resolveTargets(editor);
+	if (targets.length === 0) {
+		return;
+	}
 
-		// A single editor.edit call is one undo step for every cursor.
-		const applied = await editor.edit(editBuilder => {
-			for (const { range, text } of edits) {
-				editBuilder.replace(range, text);
-			}
-		});
-		if (!applied) {
-			return;
-		}
-
-		const result: Array<{ index: number; selection: vscode.Selection }> = [];
-
-		let shift = 0;
-		for (const { target, text, start, delta } of edits) {
-			const a = document.positionAt(start + shift);
-			const b = document.positionAt(start + shift + text.length);
-			result.push({
-				index: target.index,
-				selection: target.reversed ? new vscode.Selection(b, a) : new vscode.Selection(a, b),
-			});
-			shift += delta;
-		}
-
-		for (const { offset, index } of passthrough) {
-			// Shift by every edit that ended at or before this cursor. A cursor
-			// strictly inside a replaced selection moves with the text before it.
-			const moved = edits.reduce((sum, edit) => {
-				if (edit.end <= offset) {
-					return sum + edit.delta;
-				}
-				if (edit.start < offset) {
-					return sum + toggledOffset(edit.oldText, offset - edit.start) - (offset - edit.start);
-				}
-				return sum;
-			}, offset);
-			const position = document.positionAt(moved);
-			result.push({ index, selection: new vscode.Selection(position, position) });
-		}
-
-		// Keep the user's selection order: `selections[0]` is the primary selection.
-		result.sort((a, b) => a.index - b.index);
-		editor.selections = result.map(r => r.selection);
+	// Compute everything against the pre-edit document, then map selections
+	// through the length changes (e.g. "ß" -> "SS").
+	const edits = targets.map(target => {
+		const oldText = document.getText(target.range);
+		return {
+			target,
+			range: target.range,
+			oldText,
+			text: transform.convert(oldText),
+			delta: 0,
+			start: document.offsetAt(target.range.start),
+			end: document.offsetAt(target.range.end),
+		};
 	});
+	for (const edit of edits) {
+		edit.delta = edit.text.length - (edit.end - edit.start);
+	}
 
-	context.subscriptions.push(disposable);
+	// A single editor.edit call is one undo step for every cursor.
+	const applied = await editor.edit(editBuilder => {
+		for (const { range, text } of edits) {
+			editBuilder.replace(range, text);
+		}
+	});
+	if (!applied) {
+		return;
+	}
+
+	const result: Array<{ index: number; selection: vscode.Selection }> = [];
+
+	let shift = 0;
+	for (const { target, text, start, delta } of edits) {
+		const a = document.positionAt(start + shift);
+		const b = document.positionAt(start + shift + text.length);
+		result.push({
+			index: target.index,
+			selection: target.reversed ? new vscode.Selection(b, a) : new vscode.Selection(a, b),
+		});
+		shift += delta;
+	}
+
+	for (const { offset, index } of passthrough) {
+		// Shift by every edit that ended at or before this cursor. A cursor
+		// strictly inside a replaced selection moves with the text before it.
+		const moved = edits.reduce((sum, edit) => {
+			if (edit.end <= offset) {
+				return sum + edit.delta;
+			}
+			if (edit.start < offset) {
+				return sum + transform.offset(edit.oldText, offset - edit.start) - (offset - edit.start);
+			}
+			return sum;
+		}, offset);
+		const position = document.positionAt(moved);
+		result.push({ index, selection: new vscode.Selection(position, position) });
+	}
+
+	// Keep the user's selection order: `selections[0]` is the primary selection.
+	result.sort((a, b) => a.index - b.index);
+	editor.selections = result.map(r => r.selection);
 }
 
 export function deactivate() { }

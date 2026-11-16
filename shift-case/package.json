@@ -33,7 +33,10 @@
     "Formatters"
   ],
   "activationEvents": [
-    "onCommand:shift-case.toggleCase"
+    "onCommand:shift-case.toggleCase",
+    "onCommand:shift-case.snakeCase",
+    "onCommand:shift-case.pascalCase",
+    "onCommand:shift-case.sentenceCase"
   ],
   "main": "./dist/extension.js",
   "browser": "./dist/web/extension.js",
@@ -41,7 +44,23 @@
     "commands": [
       {
         "command": "shift-case.toggleCase",
-        "title": "Toggle Case"
+        "title": "Toggle Case",
+        "category": "Shift Case"
+      },
+      {
+        "command": "shift-case.snakeCase",
+        "title": "Snake Case",
+        "category": "Shift Case"
+      },
+      {
+        "command": "shift-case.pascalCase",
+        "title": "Pascal Case",
+        "category": "Shift Case"
+      },
+      {
+        "command": "shift-case.sentenceCase",
+        "title": "Sentence Case",
+        "category": "Shift Case"
       }
     ],
     "keybindings": [
@@ -56,6 +75,18 @@
       "commandPalette": [
         {
           "command": "shift-case.toggleCase",
+          "when": "editorIsOpen"
+        },
+        {
+          "command": "shift-case.snakeCase",
+          "when": "editorIsOpen"
+        },
+        {
+          "command": "shift-case.pascalCase",
+          "when": "editorIsOpen"
+        },
+        {
+          "command": "shift-case.sentenceCase",
           "when": "editorIsOpen"
         }
       ],
