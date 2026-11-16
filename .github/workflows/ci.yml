@@ -33,6 +33,15 @@ jobs:
         if: runner.os != 'Linux'
         run: npm test
 
+  # Shift Case ships with zero runtime dependencies (see the README); fail if one is added.
+  no-runtime-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check package.json has no runtime dependencies
+        run: |
+          node -e "const d = Object.keys(require('./package.json').dependencies || {}); if (d.length) { console.error('Runtime dependencies are not allowed: ' + d.join(', ')); process.exit(1); }"
+
   # Runs the same editor tests plus Jupyter notebook-cell tests in VS Code for the
   # Web (headless Chromium via @vscode/test-web).
   web-test:
