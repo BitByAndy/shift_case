@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+import { pascalCase, sentenceCase, snakeCase, splitWords } from '../../cases';
 import { toggleCase, toggledOffset } from '../../extension';
 
 export async function open(content: string) {
@@ -26,6 +27,53 @@ export function registerCommandTests(): void {
 			// "aß" is not all-uppercase, so the whole text goes UPPERCASE: ß -> SS.
 			assert.strictEqual(toggledOffset('aß', 2), 3);
 		});
+	});
+
+	suite('case converters', () => {
+		const check = (fn: (s: string) => string, cases: Array<[string, string]>) => {
+			for (const [input, expected] of cases) {
+				test(`"${input}" -> "${expected}"`, () => assert.strictEqual(fn(input), expected));
+			}
+		};
+
+		suite('splitWords', () => {
+			test('splits separators and camel boundaries', () => {
+				assert.deepStrictEqual(splitWords('fooBar_baz-qux  HTTPServer2'), ['foo', 'Bar', 'baz', 'qux', 'HTTP', 'Server', '2']);
+				assert.deepStrictEqual(splitWords('!!!'), []);
+			});
+		});
+
+		suite('snakeCase', () => check(snakeCase, [
+			['Hello World', 'hello_world'],
+			['fooBarBaz', 'foo_bar_baz'],
+			['HTTPServer', 'http_server'],
+			['kebab-case-name', 'kebab_case_name'],
+			['PascalCase', 'pascal_case'],
+			['  padded text  ', '  padded_text  '],
+			['one two\nthree four', 'one_two\nthree_four'],
+			['one two\r\nthree', 'one_two\r\nthree'],
+			['', ''],
+			['___', '___'],
+		]));
+
+		suite('pascalCase', () => check(pascalCase, [
+			['hello world', 'HelloWorld'],
+			['snake_case_name', 'SnakeCaseName'],
+			['HELLO WORLD', 'HelloWorld'],
+			['fooBar', 'FooBar'],
+			['élan vital', 'ÉlanVital'],
+			['  padded  ', '  Padded  '],
+			['', ''],
+		]));
+
+		suite('sentenceCase', () => check(sentenceCase, [
+			['HELLO WORLD', 'Hello world'],
+			['hello. WORLD! how are you? fine', 'Hello. World! How are you? Fine'],
+			['  leading space', '  Leading space'],
+			['line one.\nline two', 'Line one.\nLine two'],
+			['3.14 is pi', '3.14 is pi'],
+			['', ''],
+		]));
 	});
 
 	suite('toggleCase', () => {
@@ -250,6 +298,44 @@ export function registerCommandTests(): void {
 				assert.strictEqual(document.getText(), 'STRASSE ABC');
 				assert.deepStrictEqual(selectedTexts(editor), ['STRASSE', 'ABC']);
 			});
+		});
+	});
+
+	suite('extra case commands', () => {
+		const run = (command: string) => vscode.commands.executeCommand(command);
+
+		test('are registered, and only toggleCase has a default keybinding', async () => {
+			await vscode.extensions.getExtension('bitbyandy.shift-case')?.activate();
+			const all = await vscode.commands.getCommands(true);
+			for (const id of ['snakeCase', 'pascalCase', 'sentenceCase']) {
+				assert.ok(all.includes(`shift-case.${id}`), id);
+			}
+			const keybindings = vscode.extensions.getExtension('bitbyandy.shift-case')?.packageJSON.contributes.keybindings;
+			assert.deepStrictEqual(keybindings.map((k: { command: string }) => k.command), ['shift-case.toggleCase']);
+		});
+
+		test('snake case converts the selection and keeps it selected', async () => {
+			const { document, editor } = await open('Hello World and more');
+			editor.selection = new vscode.Selection(0, 0, 0, 11);
+			await run('shift-case.snakeCase');
+			assert.strictEqual(document.getText(), 'hello_world and more');
+			assert.deepStrictEqual(selectedTexts(editor), ['hello_world']);
+		});
+
+		test('pascal case converts the word under a bare cursor', async () => {
+			const { document, editor } = await open('foo_bar baz');
+			editor.selection = at(0, 2);
+			await run('shift-case.pascalCase');
+			assert.strictEqual(document.getText(), 'FooBar baz');
+		});
+
+		test('sentence case works with multiple selections in one undo step', async () => {
+			const { document, editor } = await open('HELLO THERE\nBYE NOW');
+			editor.selections = [new vscode.Selection(0, 0, 0, 11), new vscode.Selection(1, 0, 1, 7)];
+			await run('shift-case.sentenceCase');
+			assert.strictEqual(document.getText(), 'Hello there\nBye now');
+			await vscode.commands.executeCommand('undo');
+			assert.strictEqual(document.getText(), 'HELLO THERE\nBYE NOW');
 		});
 	});
 }
