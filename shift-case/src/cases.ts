@@ -1,11 +1,19 @@
 // Pure text converters, kept free of the `vscode` API so they are trivial to test.
 
+// Each letter or digit keeps any combining marks that follow it, so decomposed
+// text ("e" + U+0301) stays in one piece instead of losing the accent.
+const mark = '\\p{M}*';
+const Lu = `\\p{Lu}${mark}`;
+const Ll = `\\p{Ll}${mark}`;
+const L = `\\p{L}${mark}`;
+const N = `\\p{N}${mark}`;
+
 /**
  * A word is a run of lowercase (optionally capitalised), a run of capitals that is
  * not the start of a capitalised word ("HTTPServer" -> "HTTP", "Server"), digits,
- * or any other letters (scripts without case).
+ * or any other letters (scripts without case). Combining marks stay with their letter.
  */
-const WORD = /\p{Lu}?\p{Ll}+|\p{Lu}+(?!\p{Ll})|\p{N}+|\p{L}+/gu;
+const WORD = new RegExp(`(?:${Lu})?(?:${Ll})+|(?:${Lu})+(?!\\p{Ll})|(?:${N})+|(?:${L})+`, 'gu');
 
 /** Splits identifier-ish text into words, ignoring separators (spaces, `_`, `-`, punctuation). */
 export function splitWords(text: string): string[] {

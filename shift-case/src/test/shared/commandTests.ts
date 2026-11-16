@@ -41,6 +41,9 @@ export function registerCommandTests(): void {
 				assert.deepStrictEqual(splitWords('fooBar_baz-qux  HTTPServer2'), ['foo', 'Bar', 'baz', 'qux', 'HTTP', 'Server', '2']);
 				assert.deepStrictEqual(splitWords('!!!'), []);
 			});
+			test('keeps combining marks with their letter', () => {
+				assert.deepStrictEqual(splitWords('cafe\u0301 au'), ['cafe\u0301', 'au']);
+			});
 		});
 
 		suite('snakeCase', () => check(snakeCase, [
@@ -54,6 +57,8 @@ export function registerCommandTests(): void {
 			['one two\r\nthree', 'one_two\r\nthree'],
 			['', ''],
 			['___', '___'],
+			['cafe\u0301 au lait', 'cafe\u0301_au_lait'],
+			['Cafe\u0301Au\u0301Lait', 'cafe\u0301_au\u0301_lait'],
 		]));
 
 		suite('pascalCase', () => check(pascalCase, [
@@ -63,6 +68,7 @@ export function registerCommandTests(): void {
 			['fooBar', 'FooBar'],
 			['élan vital', 'ÉlanVital'],
 			['  padded  ', '  Padded  '],
+			['cafe\u0301 au lait', 'Cafe\u0301AuLait'],
 			['', ''],
 		]));
 
