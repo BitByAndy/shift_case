@@ -2,7 +2,7 @@
   "name": "shift-case",
   "displayName": "Shift Case",
   "description": "One key, two states: toggle text between UPPERCASE and lowercase with Shift+Alt+U. Nothing to configure.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "bitbyandy",
   "license": "MIT",
   "repository": {
