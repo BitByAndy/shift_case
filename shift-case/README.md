@@ -12,8 +12,15 @@
 - **Predictable.** It never cycles through other cases: it only flips between UPPERCASE and lowercase. Mixed-case text becomes UPPERCASE and then lowercase, so use undo to get the original mixed case back.
 - **Zero config.** No settings, no case menu, no mode to remember. Install it and press the key.
 - **Multi-cursor aware.** Works with multiple cursors and selections, and one undo reverts them all.
-- **Lightweight.** No runtime dependencies, it only loads when you run the command, and it collects no telemetry.
+- **Lightweight.** No runtime dependencies, no telemetry and no network access. It only loads when you run one of its commands, and the whole package is about 14 KB.
 - **Works everywhere.** Desktop VS Code, plus VS Code for the Web (vscode.dev, github.dev).
+
+## Usage
+
+1. Select the text you want to change, or just put the cursor in a word.
+2. Press `Shift+Alt+U`, or run **Toggle Case** from the Command Palette.
+
+With no selection, the word under the cursor is toggled (using the language's own definition of a word) and left selected, so a second press flips it to the other case (for all-lowercase or all-uppercase text that restores the original).
 
 ## More cases (optional)
 
@@ -27,12 +34,7 @@ The toggle stays a simple two-state switch. If you also want other cases, these 
 
 They act on the selection (or the word under the cursor) just like the toggle. To bind one, open **Preferences: Open Keyboard Shortcuts** and search for `shift-case`.
 
-## Usage
-
-1. Select the text you want to change, or just put the cursor in a word.
-2. Press `Shift+Alt+U`, or run **Toggle Case** from the Command Palette.
-
-With no selection, the word under the cursor is toggled (using the language's own definition of a word) and left selected, so a second press flips it to the other case (for all-lowercase or all-uppercase text that restores the original).
+VS Code's built-in Transform commands (below) already cover Snake and Pascal Case in recent versions, so use whichever you prefer; Sentence Case is the one the built-ins don't offer.
 
 ## Shift Case vs. the built-in Transform commands
 
